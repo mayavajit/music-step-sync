@@ -1,11 +1,43 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import * as React from "react";
+import { makeRedirectUri, useAuthRequest } from "expo-auth-session";
+import { Button, StyleSheet, View } from "react-native";
+
+// Endpoint
+const discovery = {
+  authorizationEndpoint: "https://accounts.spotify.com/authorize",
+  tokenEndpoint: "https://accounts.spotify.com/api/token",
+};
 
 export function Spotify() {
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId: "client_id",
+      scopes: ["user-read-email", "playlist-modify-public"],
+      // To follow the "Authorization Code Flow" to fetch token after
+      // authorizationEndpoint
+      // this must be set to false
+      usePKCE: false,
+      redirectUri: makeRedirectUri(),
+    },
+    discovery
+  );
+
+  React.useEffect(() => {
+    if (response?.type === "success") {
+      // const { code } = response.params;
+      console.log(response);
+    }
+  }, [response]);
+
   return (
     <View style={styles.container}>
-      <Text>Spotify</Text>
-      <StatusBar style="auto" />
+      <Button
+        disabled={!request}
+        title="Login"
+        onPress={() => {
+          promptAsync();
+        }}
+      />
     </View>
   );
 }
